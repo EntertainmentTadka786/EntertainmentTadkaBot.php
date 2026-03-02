@@ -2,11 +2,9 @@
 services:
   - type: web
     name: entertainment-tadka-bot
-    env: docker
+    runtime: image
     repo: https://github.com/yourusername/your-repo.git
-    branch: main
-    dockerfilePath: ./Dockerfile
-    dockerContext: .
+    plan: free
     envVars:
       - key: BOT_TOKEN
         value: 8315381064:AAGk0FGVGmB8j5SjpBvW3rD3_kQHe_hyOWU
@@ -31,7 +29,6 @@ services:
       - key: MAINTENANCE_MODE
         value: false
     healthCheckPath: /?health
-    autoDeploy: true
     disk:
       name: bot-data
       mountPath: /var/www/html
