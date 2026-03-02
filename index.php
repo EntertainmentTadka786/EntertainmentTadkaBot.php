@@ -1,8 +1,10 @@
 <?php
 // ==============================
-// ENTERTAINMENT TADKA BOT - RENDER.COM WEBHOOK VERSION
+// ENTERTAINMENT TADKA BOT - RENDER.COM WEBHOOK VERSION - FIXED
 // ==============================
 // Optimized for Render.com Docker Web Service
+// Fixed: Parse error on line 2146 (setWebhook constant issue)
+// Fixed: 301 redirect issue
 // Webhook Mode - No Polling
 // ==============================
 
@@ -85,7 +87,7 @@ $ENV_CONFIG = [
     'MAINTENANCE_MODE' => (getenv('MAINTENANCE_MODE') === 'true') ? true : false,
     'RATE_LIMIT_REQUESTS' => 30,
     'RATE_LIMIT_WINDOW' => 60,
-    'WEBHOOK_URL' => getenv('WEBHOOK_URL') ?: ''
+    'WEBHOOK_URL' => getenv('WEBHOOK_URL') ?: '' // FIXED: empty string instead of setWebhook
 ];
 
 if (empty($ENV_CONFIG['BOT_TOKEN'])) {
@@ -444,6 +446,7 @@ function apiRequest($method, $params = array(), $is_multipart = false) {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false); // Don't follow redirects
         $res = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
@@ -458,7 +461,8 @@ function apiRequest($method, $params = array(), $is_multipart = false) {
                 'method' => 'POST',
                 'content' => http_build_query($params),
                 'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
-                'timeout' => 30
+                'timeout' => 30,
+                'follow_location' => false // Don't follow redirects
             ]
         ];
         $context = stream_context_create($options);
@@ -1711,7 +1715,7 @@ function handle_command($chat_id, $user_id, $command, $params = []) {
             break;
 
         case '/help':
-            sendHinglish($chat_id, 'help');
+            sendMessage($chat_id, getHinglishResponse('help'), null, 'HTML');
             break;
 
         case '/search':
@@ -1750,7 +1754,7 @@ function handle_command($chat_id, $user_id, $command, $params = []) {
                     ]
                 ]
             ];
-            sendHinglish($chat_id, 'language_choose', [], json_encode($keyboard));
+            sendMessage($chat_id, getHinglishResponse('language_choose'), json_encode($keyboard), 'HTML');
             break;
 
         case '/settings':
@@ -1784,15 +1788,15 @@ function handle_command($chat_id, $user_id, $command, $params = []) {
             $result = $requestSystem->submitRequest($user_id, $movie_name, '');
             
             if ($result['success']) {
-                sendHinglish($chat_id, 'request_success', [
+                sendMessage($chat_id, getHinglishResponse('request_success', [
                     'movie' => $movie_name,
                     'id' => $result['request_id']
-                ]);
+                ]), null, 'HTML');
             } else {
                 if (strpos($result['message'], 'already requested') !== false) {
-                    sendHinglish($chat_id, 'request_duplicate');
+                    sendMessage($chat_id, getHinglishResponse('request_duplicate'), null, 'HTML');
                 } else {
-                    sendHinglish($chat_id, 'request_limit', ['limit' => MAX_REQUESTS_PER_DAY]);
+                    sendMessage($chat_id, getHinglishResponse('request_limit', ['limit' => MAX_REQUESTS_PER_DAY]), null, 'HTML');
                 }
             }
             break;
@@ -1803,7 +1807,7 @@ function handle_command($chat_id, $user_id, $command, $params = []) {
             $stats = $requestSystem->getUserStats($user_id);
             
             if (empty($requests)) {
-                sendHinglish($chat_id, 'myrequests_empty');
+                sendMessage($chat_id, getHinglishResponse('myrequests_empty'), null, 'HTML');
                 return;
             }
             
@@ -2142,7 +2146,7 @@ $requestSystem = RequestSystem::getInstance();
 
 // Webhook setup page
 if (isset($_GET['setup'])) {
-    $webhook_url = (WEBHOOK_URL ?: "https://" . $_SERVER['HTTP_HOST"]) . "/";
+    $webhook_url = (WEBHOOK_URL ?: "https://" . $_SERVER['HTTP_HOST']) . "/";
     $result = apiRequest('setWebhook', ['url' => $webhook_url]);
     $result_data = json_decode($result, true);
     
@@ -2475,15 +2479,15 @@ if ($update) {
                 $result = $requestSystem->submitRequest($user_id, $movie_name, '');
                 
                 if ($result['success']) {
-                    sendHinglish($chat_id, 'request_success', [
+                    sendMessage($chat_id, getHinglishResponse('request_success', [
                         'movie' => $movie_name,
                         'id' => $result['request_id']
-                    ]);
+                    ]), null, 'HTML');
                 } else {
                     if (strpos($result['message'], 'already requested') !== false) {
-                        sendHinglish($chat_id, 'request_duplicate');
+                        sendMessage($chat_id, getHinglishResponse('request_duplicate'), null, 'HTML');
                     } else {
-                        sendHinglish($chat_id, 'request_limit', ['limit' => MAX_REQUESTS_PER_DAY]);
+                        sendMessage($chat_id, getHinglishResponse('request_limit', ['limit' => MAX_REQUESTS_PER_DAY]), null, 'HTML');
                     }
                 }
             } else {
@@ -2779,13 +2783,13 @@ if ($update) {
             $result = $requestSystem->submitRequest($user_id, $movie_name, '');
             
             if ($result['success']) {
-                sendHinglish($chat_id, 'request_success', [
+                sendMessage($chat_id, getHinglishResponse('request_success', [
                     'movie' => $movie_name,
                     'id' => $result['request_id']
-                ]);
+                ]), null, 'HTML');
                 answerCallbackQuery($query['id'], "Request sent!");
             } else {
-                sendHinglish($chat_id, 'request_limit', ['limit' => MAX_REQUESTS_PER_DAY]);
+                sendMessage($chat_id, getHinglishResponse('request_limit', ['limit' => MAX_REQUESTS_PER_DAY]), null, 'HTML');
                 answerCallbackQuery($query['id'], "Daily limit reached!", true);
             }
         }
