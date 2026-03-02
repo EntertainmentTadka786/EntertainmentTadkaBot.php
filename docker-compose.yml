@@ -1,0 +1,23 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    ports:
+      - "8080:80"
+    environment:
+      - BOT_TOKEN=8315381064:AAGk0FGVGmB8j5SjpBvW3rD3_kQHe_hyOWU
+      - BOT_USERNAME=EntertainmentTadkaBot
+      - ADMIN_IDS=1080317415
+      - PUBLIC_CHANNEL_1_ID=-1003181705395
+      - PUBLIC_CHANNEL_2_ID=-1002831605258
+      - PUBLIC_CHANNEL_3_ID=-1002964109368
+      - PRIVATE_CHANNEL_1_ID=-1003251791991
+      - PRIVATE_CHANNEL_2_ID=-1002337293281
+      - PRIVATE_CHANNEL_3_ID=-1003614546520
+      - ENVIRONMENT=production
+      - MAINTENANCE_MODE=false
+    volumes:
+      - ./:/var/www/html
+    restart: unless-stopped
