@@ -1,0 +1,38 @@
+# render.yaml
+services:
+  - type: web
+    name: entertainment-tadka-bot
+    env: docker
+    repo: https://github.com/yourusername/your-repo.git
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: BOT_TOKEN
+        value: 8315381064:AAGk0FGVGmB8j5SjpBvW3rD3_kQHe_hyOWU
+      - key: BOT_USERNAME
+        value: EntertainmentTadkaBot
+      - key: ADMIN_IDS
+        value: 1080317415
+      - key: PUBLIC_CHANNEL_1_ID
+        value: -1003181705395
+      - key: PUBLIC_CHANNEL_2_ID
+        value: -1002831605258
+      - key: PUBLIC_CHANNEL_3_ID
+        value: -1002964109368
+      - key: PRIVATE_CHANNEL_1_ID
+        value: -1003251791991
+      - key: PRIVATE_CHANNEL_2_ID
+        value: -1002337293281
+      - key: PRIVATE_CHANNEL_3_ID
+        value: -1003614546520
+      - key: ENVIRONMENT
+        value: production
+      - key: MAINTENANCE_MODE
+        value: false
+    healthCheckPath: /?health
+    autoDeploy: true
+    disk:
+      name: bot-data
+      mountPath: /var/www/html
+      sizeGB: 1
