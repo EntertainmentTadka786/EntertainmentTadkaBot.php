@@ -1,7 +1,7 @@
-# Dockerfile - Fixed Version for Render.com
+# Dockerfile - Fixed for Render.com
 FROM php:8.2-apache
 
-# System dependencies with all required libraries for GD
+# System dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -11,11 +11,9 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     libxml2-dev \
     libzip-dev \
-    libwebp-dev \
-    libxpm-dev \
     zip \
     unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath zip \
     && apt-get clean \
@@ -33,8 +31,8 @@ WORKDIR /var/www/html
 # Project files copy karo
 COPY . .
 
-# Apache configuration
-COPY .htaccess /var/www/html/.htaccess
+# Apache configuration - FIXED: Removed /etc/hosts modification
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Create necessary directories and set permissions
 RUN mkdir -p /var/www/html/cache \
@@ -52,14 +50,11 @@ RUN mkdir -p /var/www/html/cache \
     && chmod 666 /var/www/html/reminders.json \
     && chmod 777 /var/www/html/cache
 
-# Apache config for Render
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
-    && echo "127.0.0.1 localhost" >> /etc/hosts
-
 # PHP configuration
 RUN echo "upload_max_filesize = 50M" > /usr/local/etc/php/conf.d/uploads.ini \
     && echo "post_max_size = 50M" >> /usr/local/etc/php/conf.d/uploads.ini \
-    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini
+    && echo "max_execution_time = 300" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/uploads.ini
 
 # Port expose karo
 EXPOSE 80
